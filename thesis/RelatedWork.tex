@@ -1,0 +1,40 @@
+\documentclass[a4paper]{standalone}
+
+\input{include.tex}
+
+\begin{document}
+\chapter{Related Work}\label{chap:relatedWork}
+\section{Work Outside of Deep Learning}
+Hodosh, Young and Hockenmaier \cite{hodosh2013framing} as well as Socher and Fei-Fei \cite{socher2010connecting} present some of the earliest work we have found in the literature. Both use Kernel Canonical Correlation Analysis as a means of mapping images to text and vice-versa. Their use of kernels precludes the direct analysis of the feature space.
+
+La Cascia, Sethi and Sclaroff \cite{la1998combining} develop a text-image content-based search system. They work with a similar idea as our work, i.e. concatenating text and image features, but instead of using NNs as feature extractors, they employ Latent Semantic Indexing (LSI) and visual statistics, specifically color histograms and dominant orientation histogram.
+
+Johnsson, Balkenius and Hesslow \cite{johnsson2011multimodal} present the Associative Self-Organizing Map (A-SOM). An A-SOM is able to build a common representation from diverse modalities. In an A-SOM, each modality is fed separately to a dedicated SOM (called \emph{associated SOM} in their work), and then a higher level SOM is trained on the unit activities of the single-modality SOMs. Similarly, and also taking inspiration from biology, Papliński and Gustafsson \cite{Paplinski2005} build a feed-forward neural network in which each neuron is a SOM; the input layer  is able to mix SOM-neurons handling a mixture of modalities. Finally, Sjöberg and Laaksonen \cite{sjobergintegrated} use SOMs to perform data mining on multimedia databases. They build a fixed hierarchy of SOMs that work with modality-specific features at the lower levels, like text n-grams and edge histograms, and with more abstract concepts at the higher levels, like \emph{age} or \emph{hardness}.
+
+\section{Boltzmann Machine-based}
+
+Srivastava and Salakhutdinov \cite{srivastava2012multimodal} use a Deep Boltzmann Machine (DBM) to learn a common representation for inputs coming from different modalities. Their architecture comprises a dedicated DBM for each modality, joined by a single layer, which learns the joint embedding. Their method uses a SIFT-based feature extraction procedure for images and a bag-of-words approach for text. Based on a single modality, their model is able to reconstruct the missing modality by sampling from the hidden states of DBM. They evaluate their method on image classification and image retrieval tasks, on the MIR Flickr Dataset \cite{huiskes2008mir}.
+
+\section{CNN-LSTM Models}
+Kiros, Salakhutdinov and Zemel \cite{Kiros2014} work on a encoder-decoder pipeline. It combines a convolutional Neural Network (CNN) with a Long-Short Term Memory (LSTM) Recurrent Neural Network (RNN) in the encoder part in order to map images and sentences into a common space. It then uses a so called Structure-Content Neural Language Model (SC-NLM) in the decoder part to generate descriptions. The encoder they build can be used independently.
+
+Karpathy, Joulin and Fei-Fei \cite{karpathy2014deep} present a deep, multi-modal embedding method for information retrieval. It works on image and sentence fragments, i.e. their method captures individual entities in images and text. Their approach works bidirectionally, meaning that one can retrieve images based on text queries and vise-versa.
+
+\section{CNN-skip-gram Models}
+Ngiam et al. \cite{ngiam2011multimodal} work on a Bimodal Deep Autoencoder (BDA). A BDA consists of a two stacks of modality-specific encoding-decoding layers, much like a regular Autoencoder, but with a single, shared middle layer which fuses the two modalities. They perform experiments using video and audio as input modalities, reporting the reconstruction accuracy of the BDA for each modality.
+
+Frome et al. \cite{frome2013devise} develop a Deep Visual-Semantic Embedding model (DeViSE) that learns a projection from image feature space into word feature space. They use a pre-trained CNN to extract image features, and a pre-trained skip-gram model \cite{Mikolov2013,mikolov2013distributed} to extract word features. Using a training set of image-label pairs, DeViSE then learns to project the image features into the skip-gram space by minimizing the loss between the image feature projection and the skip-gram representation of the corresponding label. They evaluate their approach with experiments in image classification and zero-shot learning, using data from the ImageNet Large Scale Visual Recognition Challenge (ILSVRC) \cite{ILSVRC15} 2012 and 2011, respectively. This is the work we have used as a baseline to compare against.
+
+Also working on zero-shot learning, Norouzi et al. \cite{norouzi2013zero} propose Convex combination of Semantic Embeddings (ConSE). Their method predicts new, unseen labels as the weighted \footnote{Weighted by the probability predicted by a CNN.} linear combination of the semantic embedding of training labels. They provide a quantitative comparison with DeViSE on the zero-shot learning task.
+
+Kaiser et al. \cite{kaiser2017one} try to generalize the multi-modality, multi-task learning problem with their MultiModel. In their own words, their stated goal is to \emph{"create a unified deep learning model to solve tasks across multiple domains"}. They present an architecture consisting of:
+\begin{itemize}
+	\item  several modality NNs, one for each different input modality;
+	\item an encoder, which mixes the modality nets using convolutions, attention mechanisms and mixture of experts\footnote{Expert: simple feed-forward network tailored to a specific task.};
+	\item an I/O mixer, that combines the output from the encoder with previous outputs from the decoder;
+	\item and a decoder, which  mixes the encoded inputs with the I/O mixer output to generate new outputs.
+\end{itemize}
+
+MultiModel can be trained on one or several tasks simultaneously, and then tested on a single task. In their experiments, they use eight tasks from the field of Natural Language Processing (NLP), image classification and image captioning. They compare their method with state of the art results. They also explore the difference between training MultiModel on a single task or on all eight. MultiModel represents the most recent, and possibly the most advanced, work we have found in the literature.
+
+\end{document}

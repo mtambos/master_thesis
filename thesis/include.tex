@@ -1,0 +1,61 @@
+% use this declaration to set specific page margins
+%\usepackage[a4paper , lmargin = {2.7cm} , rmargin = {2.9cm} , tmargin = {2.7cm} , bmargin = {4.6cm} ]{geometry}
+\usepackage[a4paper]{geometry}
+\usepackage[ngerman, english]{babel}
+
+\usepackage[utf8]{inputenc}
+\usepackage[boxed]{algorithm2e}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{authblk}
+\usepackage{caption}
+\usepackage{cleveref}
+\usepackage [autostyle, english = american]{csquotes}
+\usepackage{fontenc}
+\usepackage{fontspec}
+\usepackage{graphicx}
+\usepackage[pagebackref=true]{hyperref}
+\usepackage{multirow}
+\usepackage[section]{placeins}
+\usepackage{refstyle}
+\usepackage{standalone}
+\usepackage{subcaption}
+\usepackage{tabularx}
+\usepackage{url}
+\usepackage{scrpage2}					% header and footer line
+
+
+% header and footer line - no header & footer line on pages where a new chapter starts
+\pagestyle{scrheadings}
+\ohead{Mixing Text and Image Modalities in Artificial Neural Networks}
+\ihead{Mario Tambos}
+\ofoot[]{\thepage}
+\ifoot{Master's Thesis, Mario Tambos, TU Berlin, Fachgebiet NI, 2018}
+
+\MakeOuterQuote{"}
+
+\newref{part}{name=part~,Name=Part~,names=parts~,Names=Parts~}
+\newref{alg}{name=algorithm~,Name=Algorithm~,names=algorithms~,Names=Algorithms~}
+\newref{sec}{name=section~,Name=Section~,names=sections~,Names=Sections~}
+\newref{subsec}{name=subsection~,Name=Subsection~,names=subsections~,Names=Subsections~}
+
+\newcommand{\vect}[1]{\mathbf{#1}}
+
+\newcommand{\vecx}{\vect{x}}
+\newcommand{\Dcal}{\mathcal{D}}
+\newcommand{\Sbf}{\Sigma}
+\newcommand{\Sbfs}{\Sigma^\star}
+\newcommand{\Rbb}{\mathbb{R}}
+\newcommand{\Nbb}{\mathbb{N}}
+
+\makeatletter
+\setlength{\@fptop}{0pt}
+\makeatother
+
+\makeatletter
+\AtBeginDocument{%
+    \expandafter\renewcommand\expandafter\subsection\expandafter{%
+        \expandafter\@fb@secFB\subsection
+    }%
+}
+\makeatother

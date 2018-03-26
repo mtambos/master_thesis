@@ -1,0 +1,35 @@
+\documentclass[bibtotoc,liststotoc,BCOR5mm,DIV12s]{standalone}
+
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage{refstyle}
+
+\input{include.tex}
+
+\begin{document}
+\chapter{Conclusions}\label{chap:conclusions}
+
+We proposed a new method of learning multi-modal, image-text representations using concatenation of image and text embeddings, together with a SOM model for vector quantization of the concatenations. Then, we proceeded to evaluate our approach on three tasks: image retrieval, image classification, and zero-shot learning.
+
+The results show that the approach chosen does not measure up to the state-of-the-art at the first two tasks. That being said, at least in a qualitative evaluation, it seems that the concatenation of modalities and use of a SOM does maintain the semantic properties of the GloVe embedding, as evidenced by the examples shown in \figref{ImageRetrievalStreetFail}. The same result calls into question the suitability of the "flat hit @ k" metric as a performance measure for the image retrieval task. We propose the use of the "hierarchical hit @ k" metric, utilized in the zero-shot learning experiments, as an alternative that takes into account semantical similarity, and demonstrate its effect in a single experiment.
+
+We found partial success in the zero-short learning task. However, due to inconsistencies in the sizes of dataset we constructed and the ones reported by Frome et al. (which we planned to use for comparison), we could not provide a state-of-the-art baseline. On the plus side, the fact that our approach performed better than a random classifier seems to confirm that our model captures at least some of the semantic properties of the word embedding.
+
+We believe most of the responsibility for the low performance lies with our choice of an SOM as a vector quantization method. On the one hand, even though it does preserve the topological properties of its input space, its fixed neighborhood grid might be too restrictive for our use case. On the other hand, it seems to suffer from under-fitting in the cases were few samples of a word were available, as discussed in \subsecref{ImageRetrievalAnalysis}.
+
+Despite the shortcomings exposed in this work, we presume that the concatenation of different modalities makes sense in principle, and propose it as a valid line of future research.
+
+All code used during the course of this work is available at \url{https://github.com/mtambos/master_thesis}.
+
+\section{Acknowledgements}
+I'd like to thank Youssef Kashef for his valuable feedback and ideas. I'd also like to specially thank my wife, Alexandra von Eigen, for her continuous support of all my endeavors.
+
+This thesis was written based on a template provided by the Next Generation Networks (AV) Chair, Department of Telecommunication Systems, Faculty IV, TU Berlin.
+
+This work was supported by the Deutsche Forschungsgemeinschaft (GRK1589/2). We gratefully acknowledge the support of NVIDIA Corporation with the donation of the Titan X (Pascal) GPU used for this research.
+
+We performed our experiments with help of the Python programming language \cite{python} and its following packages: ipython \cite{ipython}, keras \cite{keras}, matplotlib \cite{matplotlib}, networkx \cite{networkx}, nltk \cite{nltk}, pandas \cite{pandas}, scipy \cite{scipy}, scikit-image \cite{scikitimage}, scikit-learn \cite{scikitlearn}, seaborn \cite{seaborn}, spacy \cite{spacy}, tensorflow \cite{tensorflow} and tqdm \cite{tqdm}.
+
+
+\end{document}

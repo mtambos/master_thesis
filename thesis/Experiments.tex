@@ -1,0 +1,38 @@
+\documentclass[a4paper]{standalone}
+
+\input{include.tex}
+
+\begin{document}
+\chapter{Experiments}\label{chap:experiments}
+
+As previously stated, our aim is to explore the usefulness of a vector space formed by concatenating image and word embeddings.
+We evaluate said concatenations by performing three sets of experiments.
+
+In \secref{ImageRetrieval} we analyze the performance of our method on an image retrieval task, using the Flickr8k \cite{hodosh2013framing} and Flickr30k \cite{young2014image} datasets.
+
+In the second set of experiments, exposed in \secref{ImageClassification}, we compare several versions of our approach against AlexNet and two DeViSE models on the ILSVRC2012  \cite{ILSVRC15} image classification challenge.
+
+Finally, in \secref{ZeroShotLearning}, we evaluate our approach on a zero-shot learning task, using the ILSVRC2011 21K dataset. 
+
+These experiments were selected because they cover three aspects we deemed important, namely:
+\begin{itemize}
+    \item Reconstruct an image, based on a word (\secref{ImageRetrieval}).
+    \item Reconstruct a word, based on an image (\secref{ImageClassification}).
+    \item Carry the linguistic properties of the GloVe embedding over to our models (\secref{ZeroShotLearning}).
+\end{itemize}
+
+Since we wanted to explore the general suitability of our method to the different tasks, rather than trying to find its maximum performance, we did not perform any kind of hyper-parameter optimization in our experiments. Instead, we chose to work with the default hyperparameter values provided by the software tools we used. Exceptions to this are indicated in each section.
+
+In all cases, the result tables show the "flat hit @ k" performance measure, which is the fraction of times the correct label\footnote{In the case of image classification and zero-shot learning.} or image\footnote{In the case of image retrieval.} was found among the top k model predictions.
+
+In all experiments, the training data for the SOM was processed in batches, and normalized per batch, after the concatenation of modalities, to have mean 0 and standard deviation 1.
+
+Following the experimentation methodology of Karpathy, Joulin and Fei-Fei \cite{karpathy2014deep}\footnote{For the image retrieval experiments.} and Frome et. al \cite{frome2013devise}\footnote{For the image classification and zero-shot learning experiments.} the numbers reported correspond to a single run of each experiment.
+
+\input{ExperimentsImgRetrieval.tex}
+
+\input{ExperimentsImgClassification.tex}
+
+\input{ExperimentsZeroShot.tex}
+
+\end{document}

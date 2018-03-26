@@ -1,0 +1,177 @@
+\documentclass[a4paper]{standalone}
+
+\input{include.tex}
+
+\begin{document}
+\chapter{Multi-modal SOM}\label{chap:method}
+\section{Problem Statement}
+Given a dataset of $N$ image-word pairs $\Dcal_N = \{(\vecx_i, w_i); \vecx_i \in \Rbb^{M_1, M_2, 3}, w_i \in \Sbfs, i \in \Nbb_{\leq N}\}$, where $\vecx_i$ is a 3-channel image of $M_1$ by $M_2$ pixels, and $w_i$ is a word (sequence of characters) of arbitrary length with alphabet $\Sbf$, we want to learn an embedding $f: \Rbb^{M_1, M_2, 3} \times \Sbfs \rightarrow \Rbb^{D}$ from image-word pairs into a $D$-dimensional vector space. Moreover, we would like $f$ to have three properties, namely:
+\begin{itemize}
+	\item given a single modality, either $\vecx$ or $w$, it should be possible to reconstruct the missing modality.
+	\item it should be possible to construct inverse functions $f^{-1}_{img}: \Rbb^{D} \rightarrow \Rbb^{M_1, M_2, 3}$ and $f^{-1}_{wrd}: \Rbb^{D} \rightarrow \Sbfs$ that take a bimodal embedding vector as input and return the corresponding image and word, respectively.
+    \item the semantic properties of each modality should be preserved in the combined space.
+\end{itemize}
+
+It bears mentioning that we have not performed quantitative tests as to what extent our approach fulfills the last property.
+
+\section{Method Description}
+Our proposed solution is for $f$ to be the concatenation of separate image and word embeddings, with the image embedding being the previous-to-last layer in an AlexNet network \cite{krizhevsky2012imagenet}, and the word embedding being produced by a 300-dimensional GloVe model \cite{pennington2014glove}. In other words:
+\begin{align*}
+f              &: \Rbb^{224, 2242, 3} \times \Sbfs \rightarrow \Rbb^{4396} \\
+f(\vecx, w)    &\triangleq (f_{img}(\vecx), f_{wrd}(w)) \\
+\end{align*}
+where $(\cdot, \cdot)$ indicates vector concatenation, $f_{img}(\vecx)$ is the 4096-dimensional output of the AlexNet model with input $\vecx$, and $f_{wrd}(w)$ is the 300-dimensional GloVe embedding for word $w$. This builds what is essentially an associative memory\footnote{associative memory: retrieval of a memory of a stimulus or behavior in relation to the presentation of an associated stimulus or response. \cite{psychologydictionaryOrg}} between images and words.
+
+In comparison with DeViSE, this method has the advantage of solving word polysemy\footnote{polysemy: a condition in which a single word, phrase, or concept has more than one meaning or connotation. \cite{dictionaryCom}}. For instance, the GloVe vector for the word "crane" is the same for the bird as for the construction machine. On the other hand, the concatenation (\emph{image of a bird}, ``crane" embedding) will be different than (\emph{image of a machine}, ``crane" embedding).
+
+Although there is no warranty that $f^{-1}_{img}$ or $f^{-1}_{wrd}$ exist for a given CNN or GloVe model, using the proposed approach we can recover the original image embedding $f_{img}(\vecx)$ or word embedding $f_{wrd}(w)$ from the corresponding part in $f(\vecx, w)$ and then keep a lookup table to recover the initial image $\vecx$ or word $w$. This procedure does not represent an inverse function in the mathematical sense. Nevertheless, we found it useful in practice.
+
+\begin{algorithm}
+    \SetKwFunction{TrainSOM}{TrainSOM}
+    \TrainSOM{$\Dcal_N$, $nrows$, $ncols$, $epochs$}\\
+    \KwData{
+        $\Dcal_N = \{(\vecx_i, w_i); \vecx_i \in \Rbb^{M_1, M_2, 3}, w_i \in \Sbfs, i \in \Nbb_{\leq N}\}$: Dataset of image-word pairs.\\
+        $nrows$: number of rows in the SOM grid.\\
+        $ncols$: number of columns in the SOM grid.\\
+        $epochs$: number of iterations of the training procedure over $\Dcal_N$.
+    }
+    \KwResult{$\mathbf{somModel}$: trained SOM model}
+    \Begin{
+        $\mathbf{cnnModel} \gets$ Load pre-trained AlexNet model.\;
+        $\mathbf{w2vModel} \gets$ Load pre-trained GloVE model.\;
+        $\mathbf{somModel} \gets$ Initialize SOM model with a grid $nrows$ rows by $ncols$ columns.\;
+        \For{$epoch \gets 1$ \KwTo $epochs$}{
+            \For{$(\vecx_i, w_i)\ \mathbf{in}\ \Dcal_N$}{
+                $cnnProj \gets \mathbf{cnnModel.project}(\vecx_i)$\;
+                $w2vProj \gets \mathbf{w2vModel.project}(w_i)$\;
+                $imgWord \gets \mathbf{concatenate}(cnnProj, w2vProj)$\;
+                $\mathbf{somModel.update}(imgWord)$
+            }
+        }
+    }
+    \caption{General training procedure. $\mathbf{cnnModel.project}(\vecx_i)$ returns the value of the last fully connected layer in the AlexNet model. $\mathbf{w2vModel.project}(w_i)$ returns the embedding of the GloVE model. $\mathbf{somModel.update}(imgWord)$ performs an update step on $\mathbf{somModel}$  according to the SOM learning algorithm.}\label{alg:TrainSOM}
+\end{algorithm}
+
+\begin{algorithm}
+    \SetKwFunction{RetrieveWords}{RetrieveWords}
+    \RetrieveWords{$\mathbf{somModel}$, $\vecx$, $k$}\\
+    \KwData{
+        
+        $\mathbf{somModel}$: trained SOM model.\\
+        $\vecx \in \Rbb^{M_1, M_2, 3}$: Image we want to retrieve an associated word for.\\
+        $k$: number of candidates to retrieve.
+    }
+    \KwResult{$\mathbf{w}=\{w: w \in \Sbfs\}$: best $k$ words associated with $\vecx$}
+    \Begin{
+        $\mathbf{cnnModel} \gets$ Load pre-trained AlexNet model.\;
+        $\mathbf{w2vModel} \gets$ Load pre-trained GloVE model.\;
+        $cnnProj \gets \mathbf{cnnModel.project}(\vecx)$\;
+        $imgWordTarget \gets \mathbf{concatenate}(cnnProj, \vect{0}); \vect{0} \in \Rbb^{300}$\;
+        $imgWordUnit \gets \mathbf{w2vModel.getBMU}(imgWordTarget)$\;
+        $wordUnit \gets \mathbf{getWordVector}(imgWordUnit)$\;
+        $ \mathbf{w} \gets \mathbf{getNearestWords}(\mathbf{w2vModel}, wordUnit, k)$\;
+    }
+    \caption{Word retrieval procedure. $\mathbf{w2vModel.getBMU}(imgWordTarget)$ returns the unit in $\mathbf{somModel}$ nearest to $imgWordTarget$. $\mathbf{getWordVector}(imgWordUnit)$ returns the components of $imgWordUnit$ corresponding to the word embedding. $\mathbf{getNearestWords}(\mathbf{w2vModel}, wordUnit, k)$ returns the $k$ words in the vocabulary of $\mathbf{w2vModel}$ whose embeddings are nearest to $wordUnit$.}\label{alg:RetrieveWord}
+\end{algorithm}
+
+\begin{algorithm}
+    \SetKwFunction{RetrieveImages}{RetrieveImages}
+    \RetrieveImages{$\mathbf{somModel}$, $w$, $\mathcal{I}$, $k$}\\
+    \KwData{
+        
+        $\mathbf{somModel}$: trained SOM model.\\
+        $w \in \Sbfs$: Image we want to retrieve an associated word for.\\
+        $\mathcal{I} = \{\vecx_i; \vecx_i \in \Rbb^{M_1, M_2, 3}\}$: dataset of images.\\
+        $k$: number of candidates to retrieve.
+    }
+    \KwResult{$\mathbf{X} = \{\vecx: \in \Rbb^{M_1, M_2, 3}\}$: best $k$ images associated with $w$}
+    \Begin{
+        $\mathbf{cnnModel} \gets$ Load pre-trained AlexNet model.\;
+        $\mathbf{w2vModel} \gets$ Load pre-trained GloVE model.\;
+        $w2vProj \gets \mathbf{w2vModel.project}(w)$\;
+        $imgWordTarget \gets \mathbf{concatenate}(\vect{0}, w2vProj); \vect{0} \in \Rbb^{4096}$\;
+        $imgWordUnit \gets \mathbf{w2vModel.getBMU}(imgWordTarget)$\;
+        $imageUnit \gets \mathbf{getImageVector}(imgWordUnit)$\;
+        $\mathbf{X} \gets \mathbf{getNearestImages}(\mathbf{cnnModel}, \mathcal{I}, imageUnit, k)$\;
+    }
+    \caption{Image retrieval procedure. $\mathbf{getImageVector}(imgWordUnit)$ returns the components of $imgWordUnit$ corresponding to the image embedding. $\mathbf{getNearestImages}(\mathbf{cnnModel}, \mathcal{I}, imageUnit, k)$ returns the $k$ images in $\mathcal{I}$ whose $\mathbf{cnnModel}$-embeddings are nearest to $imageUnit$.}\label{alg:RetrieveImage}
+\end{algorithm}
+
+We further propose using a SOM model \cite{kohonen1998self} to perform vector quantization on the concatenated space. Our reasons for choosing an SOM are threefold:
+\begin{itemize}
+    \item We would like to preserve the topology of the concatenated space (as explored by Kiviluoto \cite{kiviluoto1996topology}), thus transferring the semantic properties of the continuous space word representations investigated by Mikolov, Yih, and Zweig \cite{mikolov2013linguistic} from the GloVE embedding to our concatenated representation.
+    \item We hope that each SOM unit will converge to a natural language concept important in the training set, e.g. an object class in ILSVRC2012 1K.
+    \item we would like apply the model learned to images, words, or image-word pairs not seen during training, e.g., learn image retrieval on one dataset and then perform the task on a different set if images.
+\end{itemize}
+
+In this work, we have used exclusively euclidean distances, both during the training of the SOMs and for nearest neighbor searches. We used a Gaussian bell as the neighborhood function for the SOM, with the form:
+
+$$\exp\left(-\frac{\Vert x-y \Vert^2}{2\times (0.5 \times min(cols, rows)/2)^2}\right)$$
+
+where $cols$ and $rows$ is the number of columns and rows, respectively, in the SOM grid.
+
+We employed a pre-trained GloVe model from the \verb|spacy| package \cite{spacy2} (language model: \verb|en_core_web_md|), and a pre-trained AlexNet model \cite{convnets-keras}. We also used a publicly available implementation of SOMs, namely the \verb|somoclu|\footnote{\url{https://somoclu.readthedocs.io/}} Python package
+
+The algorithms we used for training the SOM model, retrieving words given images, and retrieving images given words are described in \algref{TrainSOM, RetrieveWord, RetrieveImage}, respectively.
+
+In \chapref{experiments} we also evaluated our approach on the ImageNet1K task. The algorithms used for training and prediction are shown in \algref{TrainImgNetSOM, RetrieveImgNetLabel}, respectively.
+
+The concatenation of zeroed vectors in \algref{RetrieveWord, RetrieveImage, RetrieveImgNetLabel} is grounded in our normalization procedure (explained in \chapref{experiments}): filling the embedding of the missing modality with zeros is the least informative option for data that has been normalized to have zero mean.
+
+\begin{algorithm}
+    \SetKwFunction{TrainImgNetSOM}{TrainImgNetSOM}
+    \TrainImgNetSOM{$\Dcal_N$, $nrows$, $ncols$, $somEpochs$, $nnEpochs$}\\
+    \KwData{
+
+        $\Dcal_N = \{(\vecx_i, w_i); \vecx_i \in \Rbb^{M_1, M_2, 3}, w_i \in \Sbfs, i \in \Nbb_{\leq N}\}$: Dataset of image-word pairs. In this case, $\Sbfs$ consist of 1000 different words.\\
+        $nrows$: number of rows in the SOM grid.\\
+        $ncols$: number of columns in the SOM grid.\\
+        $somEpochs$: number of iterations of the SOM training procedure over $\Dcal_N$.
+        $nnEpochs$: number of iterations of the NN training procedure over $\Dcal_N$.
+    }
+    \KwResult{$\mathbf{topModel}$: trained NN classifier model}
+    \Begin{
+        $\mathbf{cnnModel} \gets$ Load pre-trained AlexNet model.\;
+        $\mathbf{w2vModel} \gets$ Load pre-trained GloVE model.\;
+        $\mathbf{somModel} \gets \mathbf{trainSOM}(\Dcal_N, nrows, ncols, somEpochs)$\;
+        $\mathbf{topModel} \gets$ Initialize predictive NN model.\;
+        \For{$epoch \gets 1$ \KwTo $nnEpochs$}{
+            \For{$(\vecx_i, w_i)\ \mathbf{in}\ \Dcal_N$}{
+                $cnnProj \gets \mathbf{cnnModel.project}(\vecx_i)$\;
+                $w2vProj \gets \mathbf{w2vModel.project}(w_i)$\;
+                $imgWordTarget \gets \mathbf{concatenate}(cnnProj, w2vProj)$\;
+                $imgWordUnit \gets \mathbf{w2vModel.getBMU}(imgWordTarget)$\;
+                $wordUnit \gets \mathbf{getWordVector}(imgWordUnit)$\;
+                $imgWord \gets \mathbf{concatenate}(cnnProj, wordUnit)$\;
+                $wEncoded \gets \mathbf{encodeLabel}(w_i)$\;
+                $\mathbf{topModel.train}(imgWord, wEncoded)$
+            }
+        }
+    }
+    \caption{Training procedure for the ImageNet1K classification task. $\mathbf{encodeLabel}(w_i)$ returns a 1000-dimensional one-hot encoded vector. $\mathbf{topModel.train}(imgWord, wEncoded)$ performs a forward pass and back-propagation pass on the $\mathbf{topModel}$ network with input $imgWord$ and output $wEncoded$.}\label{alg:TrainImgNetSOM}
+\end{algorithm}
+
+\begin{algorithm}
+    \SetKwFunction{RetrieveImgNetLabels}{RetrieveImgNetLabels}
+    \RetrieveImgNetLabels{$\mathbf{somModel}$, $\mathbf{topModel}$, $\vecx$}\\
+    \KwData{
+
+        $\mathbf{somModel}$: trained SOM model.\\
+        $\mathbf{topModel}$: trained NN classifier.\\
+        $\vecx \in \Rbb^{M_1, M_2, 3}$: Image we want to retrieve an associated ImageNet label for.
+    }
+    \KwResult{$l_w \in \Rbb^{1000}$: encoded label associated with $\vecx$}
+    \Begin{
+        $\mathbf{cnnModel} \gets$ Load pre-trained AlexNet model.\;
+        $\mathbf{w2vModel} \gets$ Load pre-trained GloVE model.\;
+        $cnnProj \gets \mathbf{cnnModel.project}(\vecx)$\;
+        $w2vProj \gets \mathbf{w2vModel.project}(w_i)$\;
+        $imgWordTarget \gets \mathbf{concatenate}(cnnProj, \vect{0}); \vect{0} \in \Rbb^{300}$\;
+        $imgWordUnit \gets \mathbf{w2vModel.getBMU}(imgWordTarget)$\;
+        $wordUnit \gets \mathbf{getWordVector}(imgWordUnit)$\;
+        $imgWord \gets \mathbf{concatenate}(cnnProj, wordUnit)$\;
+        $l_w \gets \mathbf{topModel.predict}(imgWord)$
+    }
+    \caption{Label prediction procedure for the ImageNet1K classification task. $\mathbf{topModel.predict}(imgWord)$ returns a 1000-dimensional vector with the probabilities of each ImageNet class for the input $imgWord$.}\label{alg:RetrieveImgNetLabel}
+\end{algorithm}
+\end{document}

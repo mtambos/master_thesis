@@ -1,0 +1,24 @@
+\documentclass[a4paper]{standalone}
+
+\input{include.tex}
+
+\begin{document}
+\chapter{Introduction}
+In the past decade, Neural Networks (NNs) have been the method of choice for image-related tasks, and are also gaining traction in the field of Natural Language Processing. Although both applications often deal with the same conceptual objects, the latent representations they build are not compatible; e.g. the latent representation for the word "dog" is different than the latent representation of a picture of a dog. Among other things, this stems from the fact that the kind of inputs each NN deals with, their "modality", is different. For instance, a NN trained on pictures will learn features (lines, corners, etc.) present in its training images that are useful for its task. If the same NN is then presented with a text input encoded in some vector, the same features are extremely unlikely to be present, even if the dimensionality of the input is correct.
+
+This incompatibility of representations makes it difficult to use the semantic content of one modality on the other. For example, if we are unsure about the meaning of the word "paddle" in a sentence, a picture of a boat would give extra content to the word, helping us differentiate it from, e.g., a table-tennis paddle.
+
+Ultimately, we want to perform transfer learning between modalities, so that the semantic representation of an entity is the same across modalities. This could then be used to provide additional information to tasks performed on any single modality.
+
+Our idea is to use two NNs as feature extractors, one for images and one for text, and then concatenate the features extracted by each.
+
+The questions we are trying to answer are two:
+
+\begin{enumerate}
+    \item Does it make sense to concatenate multi-modal features in this way?
+    \item How can we infer the features from one missing modality, having the information from the other?
+\end{enumerate}
+
+In \chapref{relatedWork}, we review previous efforts to tackle multi-modality in machine learning. In \chapref{method}, we describe the proposed image-text shared representation. In \chapref{experiments} we test our method on three tasks, namely: image retrieval, image classification and zero-shot learning. Finally, in \chapref{conclusions}, we summarize the results obtained and point to possible future work.
+
+\end{document}

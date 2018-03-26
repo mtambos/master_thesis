@@ -1,0 +1,30 @@
+% !TeX spellcheck = de_DE
+\documentclass[a4paper]{standalone}
+
+\input{include.tex}
+
+\begin{document}
+    
+\thispagestyle{empty}
+\vspace*{1.0cm}
+
+\begin{center}
+    \textbf{Zusammenfassung}
+\end{center}
+
+\vspace*{0.5cm}
+
+\noindent
+
+Bild- und Text-Erkennungssysteme sind normalerweise begrenzt auf die Verarbeitung einer Art von Input (Inputmodalität), d.h., Bilder bzw. Texte.
+Hingegen könnten Kookkurrenzrelationen durch die Verwendung von kombinierten Inputmodalitäten dazu genutzt werden, die Systemperformance bei einzelnen Modalitäten zu erhöhen, oder eine allgemeinere latente Repräsentation des Inputraumes aufzubauen.
+
+Wir stellen hierzu ein Verfahren vor, Bild- und Text-Einbettungen, die von neuronalen Netzen gelernt wurden, in einem gemeinsamen Vektorraum zu kombinieren.
+Wir nutzen eine selbstorganisierende Karte (eng. self-organizing map, SOM), die auf diesen Raum trainiert wurde, für Vektorquantisierung. Wir evaluieren unseren vorgeschlagenen Ansatz durch drei Aufgaben: Bildrückgewinnung (eng. Image Retrieval), Bildklassifizierung, sowie Zero-Shot Learning, mit Hilfe von den Flickr8K, Flickr30K, ILSVRC2012 1K und ILSVRC2012 21K Datensätzen.
+Wir führen anschließend qualitative sowie quantitative Evaluierungen der Eigenschaften unseres Ansatzes durch, nämlich die Fähigkeit zur Rekonstruktion einer fehlenden Modalität, und die Präservierung von semantischem Inhalt.
+
+Wir haben festgestellt, dass unsere Methode im Vergleich zu anderen Ansätzen in der Fachliteratur geringere Leistungen erbringt. Sie erzielt jedoch bessere Ergebnisse als Zufalls-Klassifikatoren. Dies bedeutet, dass unsere Methode eine zumindest teilweise nützliche Repräsentation des Inputraumes lernt.
+Wir haben auch Fälle gefunden, in denen das normalerweise benutzte Leistungsmaß, "flat hit at k", inadäquat ist. Wir schlagen daher ein alternatives Leistungsmaß, "hierarchical hit at k", als eine Vorgehensweise vor, semantische Ähnlichkeiten zu berücksichtigen.
+
+Unsere Methode wurde darauf ausgerichtet, Polysemie in Wörtern zu vermeiden. Außerdem scheint sie fähig zu sein, die semantischen Regularitäten der Worteinbettung in den kombinierten Vektorraum zu übertragen.
+\end{document}

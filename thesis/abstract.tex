@@ -1,0 +1,26 @@
+\documentclass[a4paper]{standalone}
+
+\input{include.tex}
+
+\begin{document}
+
+\thispagestyle{empty}
+\vspace*{1.0cm}
+
+\begin{center}
+    \textbf{Abstract}
+\end{center}
+
+\vspace*{0.5cm}
+
+\noindent
+Visual and text recognition systems are normally limited to working with a single type of input (input modality), i.e., images and text, respectively. However, by working with combined input modalities, they could leverage co-occurrence relationships to either improve their performance at single-modality tasks or build a more general latent representation of the input space.
+
+We present a way of combining embeddings for text and images learned by Neural Networks into a shared vector space.
+We use a self-organizing map (SOM), trained on this space, as a vector quantizer, and evaluate the proposed approach on three tasks: image retrieval, image classification and zero-shot learning, using the Flickr8K, Flickr30K, ILSVRC2012 1K and ILSVRC2011 21K  datasets.
+We then perform qualitative and quantitative evaluations of the properties of our approach, namely the ability to reconstruct a missing modality, and the preservation of semantic content.
+
+We have found that our method under-performs when compared with other approaches in the literature, but manages to out-perform random-guess models, meaning it is learning a representation of the input spaces that is at least partially useful. We have also found cases where the performance measure normally chosen, "flat hit at k", is inadequate. We propose the alternative "hierarchical hit at k" performance metric as a way of taking semantic similarity into account.
+
+Our method takes care of word polysemy by design, and seems to be able to carry over the semantic regularities from the word embedding to the combined embedding space.
+\end{document}
