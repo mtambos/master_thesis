@@ -1,10 +1,17 @@
-**/*.csv
-**/*.json
-**/*.pickle
-**/.mypy_cache
-**/.vscode
-**/.ipynb_checkpoints
-**/.git
+*.csv
+*.json
+*.pickle
+.mypy_cache
+.vscode
+.ipynb_checkpoints
+.git
+train_logs
+*.h5
+*.pdf
+.idea
+*.py~
+.ipynb
+*.swp
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -62,4 +69,5 @@ docs/_build/
 *.mtc1
 *.out
 *.synctex.gz
+*.brf
 
